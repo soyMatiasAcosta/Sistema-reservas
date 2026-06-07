@@ -1,33 +1,32 @@
-# Maven
 target/
 !.mvn/wrapper/maven-wrapper.jar
 
-# IntelliJ IDEA
+
 .idea/
 *.iws
 *.iml
 *.ipr
 
-# Eclipse / STS
+
 .classpath
 .project
 .settings/
 .springBeans
 
-# VS Code
+
 .vscode/
 
-# Credenciales locales — NUNCA subir al repo
+
 **/src/main/resources/application.properties
 **/src/main/resources/application-dev.properties
 
-# Logs
+
 *.log
 logs/
 
-# Sistema operativo
+
 .DS_Store
 Thumbs.db
 
-# Compilados
+
 *.class
