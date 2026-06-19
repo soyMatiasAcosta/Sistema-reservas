@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import com.cibertec.service.dto.ReservaRequestDTO;
 import com.cibertec.service.dto.ReservaResponseDTO;
 import com.cibertec.service.model.Reserva;
+import com.cibertec.service.rabbit.ReservaEventoDTO;
+import com.cibertec.service.rabbit.ReservaProductor;
 import com.cibertec.service.repository.IReservaRepository;
 
 @Service
@@ -17,6 +19,8 @@ public class ReservaService {
 	@Autowired
 	private IReservaRepository repoReserva;
 	
+	@Autowired
+	private ReservaProductor productor;
 	
 	private static final int ESTADO_PENDIENTE = 1;
     private static final int ESTADO_APROBADA = 2;
@@ -51,6 +55,10 @@ public class ReservaService {
         reserva.setIdEstadoReserva(ESTADO_PENDIENTE);
 
         Reserva guardada = repoReserva.save(reserva);
+        
+        ReservaEventoDTO evento = construirEvento(guardada, "CREADA");
+        productor.publicarMensaje(evento);
+        
         return convertirADTO(guardada);
     }
 	
@@ -77,19 +85,42 @@ public class ReservaService {
         Reserva reserva = repoReserva.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
         reserva.setIdEstadoReserva(ESTADO_APROBADA);
-        return convertirADTO(repoReserva.save(reserva));
+        Reserva guardada = repoReserva.save(reserva);
+        
+        ReservaEventoDTO evento = construirEvento(guardada, "APROBADA");
+        productor.publicarMensaje(evento);
+        
+        return convertirADTO(guardada);
     }
 
     public ReservaResponseDTO rechazarReserva(Integer id) {
         Reserva reserva = repoReserva.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
         reserva.setIdEstadoReserva(ESTADO_RECHAZADA);
-        return convertirADTO(repoReserva.save(reserva));
+        Reserva guardada = repoReserva.save(reserva);
+
+        ReservaEventoDTO evento = construirEvento(guardada, "RECHAZADA");
+        productor.publicarMensaje(evento);
+
+        return convertirADTO(guardada);
     }
 
     
     
-    
+    private ReservaEventoDTO construirEvento(Reserva reserva, String tipoEvento) {
+        ReservaEventoDTO evento = new ReservaEventoDTO();
+        evento.setIdReserva(reserva.getIdReserva());
+        evento.setFechaReserva(reserva.getFechaReserva());
+        evento.setFechaSolicitud(reserva.getFechaSolicitud());
+        evento.setIdUsuario(reserva.getIdUsuario());
+        evento.setIdAula(reserva.getIdAula());
+        evento.setIdSede(reserva.getIdSede());
+        evento.setIdHorario(reserva.getIdHorario());
+        evento.setIdEstadoReserva(reserva.getIdEstadoReserva());
+        evento.setIdTipoReserva(reserva.getIdTipoReserva());
+        evento.setTipoEvento(tipoEvento);
+        return evento;
+    }
     
     
     
