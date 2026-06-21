@@ -6,8 +6,8 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.6</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <version>3.2.5</version> 
+        <relativePath/>
     </parent>
     <groupId>com.servicio</groupId>
     <artifactId>gateway</artifactId>
@@ -16,8 +16,8 @@
     <description>API Gateway con Spring Cloud Gateway</description>
 
     <properties>
-        <java.version>21</java.version>
-        <spring-cloud.version>2025.1.1</spring-cloud.version>
+        <java.version>17</java.version> 
+        <spring-cloud.version>2023.0.1</spring-cloud.version> 
     </properties>
 
     <dependencyManagement>
@@ -35,23 +35,23 @@
     <dependencies>
         <!-- Spring Cloud Gateway (reactivo, no usa servlet) -->
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
-        </dependency>
+    		<groupId>org.springframework.cloud</groupId>
+    		<artifactId>spring-cloud-starter-gateway</artifactId>
+		</dependency>
 
-        <!-- Cliente de Eureka para descubrimiento y registro -->
+		<!-- Cliente de Eureka para descubrimiento y registro -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
-        <!-- Balanceador de carga (opcional pero recomendado) -->
+		<!-- Balanceador de carga (opcional pero recomendado) -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-loadbalancer</artifactId>
         </dependency>
 
-        <!-- DevTools -->
+		<!-- DevTools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -59,14 +59,14 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Lombok (opcional) -->
+		<!-- Lombok (opcional) -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
-        <!-- Test -->
+		<!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

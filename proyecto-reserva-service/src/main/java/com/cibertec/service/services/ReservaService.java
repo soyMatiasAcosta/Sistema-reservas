@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import com.cibertec.service.dto.ReservaRequestDTO;
 import com.cibertec.service.dto.ReservaResponseDTO;
+import com.cibertec.service.feign.AulaFeignDTO;
+import com.cibertec.service.feign.ClienteAulaFeign;
 import com.cibertec.service.model.Reserva;
 import com.cibertec.service.rabbit.ReservaEventoDTO;
 import com.cibertec.service.rabbit.ReservaProductor;
@@ -21,6 +23,10 @@ public class ReservaService {
 	
 	@Autowired
 	private ReservaProductor productor;
+	
+	@Autowired
+	private ClienteAulaFeign clienteAula;
+	
 	
 	private static final int ESTADO_PENDIENTE = 1;
     private static final int ESTADO_APROBADA = 2;
@@ -44,6 +50,18 @@ public class ReservaService {
     
     
     public ReservaResponseDTO crearReserva(ReservaRequestDTO dto) {
+    	
+    	AulaFeignDTO aula;
+    	try {
+			aula = clienteAula.obtenerAulaPorId(dto.getIdAula());
+		} catch (Exception e) {
+			throw new RuntimeException("No se encontro el salón: " + e.getMessage());
+		}
+    	
+    	if (aula == null) {
+    		throw new RuntimeException("Salón buscada no existe");
+    	}
+    	
         Reserva reserva = new Reserva();
         reserva.setFechaReserva(dto.getFechaReserva());
         reserva.setFechaSolicitud(LocalDateTime.now());
