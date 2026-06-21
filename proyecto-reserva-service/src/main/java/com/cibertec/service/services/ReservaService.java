@@ -51,17 +51,28 @@ public class ReservaService {
     
     public ReservaResponseDTO crearReserva(ReservaRequestDTO dto) {
     	
-    	AulaFeignDTO aula;
-    	try {
-			aula = clienteAula.obtenerAulaPorId(dto.getIdAula());
-		} catch (Exception e) {
-			throw new RuntimeException("No se encontro el salón: " + e.getMessage());
-		}
+    	AulaFeignDTO aula = clienteAula.obtenerAulaPorId(dto.getIdAula());
+        if (aula == null) 
+        	throw new RuntimeException("El salón buscado no existe.");
     	
-    	if (aula == null) {
-    		throw new RuntimeException("Salón buscada no existe");
-    	}
-    	
+        long reservasActuales = repoReserva.contarReservasActivas(
+                dto.getIdAula(), 
+                dto.getFechaReserva(), 
+                dto.getIdHorario()
+        );
+        
+        
+        if (aula.getIdTipoAula() == 1) { 
+            if (reservasActuales >= aula.getCapacidad()) {
+                throw new RuntimeException("Aforo lleno. La capacidad máxima es " + aula.getCapacidad());
+            }
+        } else if (aula.getIdTipoAula() == 2) { 
+            if (reservasActuales > 0) {
+                throw new RuntimeException("El salón ya fue reservado.");
+            }
+        }
+        
+        
         Reserva reserva = new Reserva();
         reserva.setFechaReserva(dto.getFechaReserva());
         reserva.setFechaSolicitud(LocalDateTime.now());
