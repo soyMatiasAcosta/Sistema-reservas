@@ -37,5 +37,17 @@ public class ReporteSemanalController {
         
     }
     
+    @PostMapping("/generar")
+    public ResponseEntity<?> generarReporte(@RequestParam Integer idAdmin) {
+        try {
+            ReporteSemanalDTO reporte = servicio.generarReporteSemanal(idAdmin);
+            return ResponseEntity.status(HttpStatus.CREATED).body(reporte);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    
+    
     
 }
