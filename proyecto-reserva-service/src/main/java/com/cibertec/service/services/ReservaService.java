@@ -12,6 +12,7 @@ import com.cibertec.service.dto.ReservaResponseDTO;
 import com.cibertec.service.feign.AulaFeignDTO;
 import com.cibertec.service.feign.ClienteAulaFeign;
 import com.cibertec.service.feign.DisponibilidadResponseDTO;
+import com.cibertec.service.feign.UsuarioFeignDTO;
 import com.cibertec.service.model.Reserva;
 import com.cibertec.service.rabbit.ReservaEventoDTO;
 import com.cibertec.service.rabbit.ReservaProductor;
@@ -30,6 +31,9 @@ public class ReservaService {
 	
 	@Autowired
 	private AulaClientService aulaClienteService;
+	
+	@Autowired
+    private UsuarioClientService usuarioClientService;
 	
 	
 	private static final int ESTADO_PENDIENTE = 1;
@@ -55,8 +59,15 @@ public class ReservaService {
     
     public ReservaResponseDTO crearReserva(ReservaRequestDTO dto) {
     	
+    	UsuarioFeignDTO usuario = usuarioClientService.obtenerUsuarioSeguro(dto.getIdUsuario());
     	
-    	//limite de fechas
+    	if (usuario == null || usuario.getIdUsuario() == null) {
+            throw new RuntimeException("Reserva denegada: El alumno no existe o el servicio de usuarios no está disponible.");
+        }
+    	
+    	
+    	
+    	
     	LocalDate hoy = LocalDate.now();
         if (dto.getFechaReserva().isBefore(hoy)) {
             throw new RuntimeException("No puedes reservar en fechas pasadas.");
@@ -66,7 +77,7 @@ public class ReservaService {
         }
     	
         
-    	//solo 3 reservas por dia
+    	
         long misReservasHoy = repoReserva.countByIdUsuarioAndFechaReservaAndIdEstadoReservaIn(
                 dto.getIdUsuario(), 
                 dto.getFechaReserva(), 
@@ -78,7 +89,7 @@ public class ReservaService {
         }
     	
         
-        //filtrar si hay clases
+        
     	DisponibilidadResponseDTO disponibilidad = aulaClienteService.verificarDisponibilidadSegura(
                 dto.getIdAula(), 
                 dto.getIdHorario(), 
@@ -93,7 +104,7 @@ public class ReservaService {
         }
     	
     	
-    	//filtrar si el aula existe
+
     	AulaFeignDTO aula = aulaClienteService.obtenerAulaSegura(dto.getIdAula()); 
     	
     	
@@ -119,7 +130,7 @@ public class ReservaService {
             }
         }
         
-        //aca ya se guarda la reserva
+
         Reserva reserva = new Reserva();
         reserva.setFechaReserva(dto.getFechaReserva());
         reserva.setFechaSolicitud(LocalDateTime.now());
