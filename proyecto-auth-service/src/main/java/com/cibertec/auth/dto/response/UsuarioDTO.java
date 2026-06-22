@@ -9,7 +9,7 @@ public class UsuarioDTO {
     private String apellidoUsuario;
     private String correoInstitucional;
     private String codigoInstitucional;
-    private String contrasena;   // para validar
+    private String contrasena;
     private String rolNombre;
     private Long idSede;
     private Long idCarrera;
