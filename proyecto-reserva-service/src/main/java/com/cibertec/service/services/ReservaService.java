@@ -15,6 +15,8 @@ import com.cibertec.service.rabbit.ReservaEventoDTO;
 import com.cibertec.service.rabbit.ReservaProductor;
 import com.cibertec.service.repository.IReservaRepository;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
 @Service
 public class ReservaService {
 
@@ -25,7 +27,7 @@ public class ReservaService {
 	private ReservaProductor productor;
 	
 	@Autowired
-	private ClienteAulaFeign clienteAula;
+	private AulaClientService aulaClienteService;
 	
 	
 	private static final int ESTADO_PENDIENTE = 1;
@@ -51,10 +53,13 @@ public class ReservaService {
     
     public ReservaResponseDTO crearReserva(ReservaRequestDTO dto) {
     	
-    	AulaFeignDTO aula = clienteAula.obtenerAulaPorId(dto.getIdAula());
-        if (aula == null) 
-        	throw new RuntimeException("El salón buscado no existe.");
+    	AulaFeignDTO aula = aulaClienteService.obtenerAulaSegura(dto.getIdAula());
     	
+        if (aula == null || aula.getIdAula() == null) {
+        	throw new RuntimeException("El servicio de laboratorios no está disponible o el laboratorio no existe. Intente más tarde.");
+    	
+        }
+        	
         long reservasActuales = repoReserva.contarReservasActivas(
                 dto.getIdAula(), 
                 dto.getFechaReserva(), 
@@ -90,7 +95,7 @@ public class ReservaService {
         
         return convertirADTO(guardada);
     }
-	
+    
     
     public List<ReservaResponseDTO> listarTodas() {
         return repoReserva.findAll().stream().map(this::convertirADTO).toList();
