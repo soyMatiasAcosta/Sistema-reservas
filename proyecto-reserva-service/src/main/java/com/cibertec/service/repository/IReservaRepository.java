@@ -21,4 +21,5 @@ public interface IReservaRepository extends JpaRepository<Reserva, Integer> {
     @Query("SELECT COUNT(r) FROM Reserva r WHERE r.idAula = :idAula AND r.fechaReserva = :fechaReserva AND r.idHorario = :idHorario AND r.idEstadoReserva IN (1, 2)")
     long contarReservasActivas(@Param("idAula") Integer idAula, @Param("fechaReserva") LocalDate fechaReserva, @Param("idHorario") Integer idHorario);
     
+    long countByIdUsuarioAndFechaReservaAndIdEstadoReservaIn(Integer idUsuario, LocalDate fechaReserva, List<Integer> estados);
 }

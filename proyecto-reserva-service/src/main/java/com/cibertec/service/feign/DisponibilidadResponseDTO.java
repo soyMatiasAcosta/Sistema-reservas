@@ -1,11 +1,10 @@
-package com.cibertec.aula.dto;
+package com.cibertec.service.feign;
 
 import lombok.Data;
 
 @Data
-public class DisponibilidadResponse {
-
-	private Integer idAula;
+public class DisponibilidadResponseDTO {
+    private Integer idAula;
     private Integer idHorario;
     private String fecha;
     private boolean disponible;

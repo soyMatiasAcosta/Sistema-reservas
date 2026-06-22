@@ -1,5 +1,6 @@
 package com.cibertec.service.services;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import com.cibertec.service.dto.ReservaRequestDTO;
 import com.cibertec.service.dto.ReservaResponseDTO;
 import com.cibertec.service.feign.AulaFeignDTO;
 import com.cibertec.service.feign.ClienteAulaFeign;
+import com.cibertec.service.feign.DisponibilidadResponseDTO;
 import com.cibertec.service.model.Reserva;
 import com.cibertec.service.rabbit.ReservaEventoDTO;
 import com.cibertec.service.rabbit.ReservaProductor;
@@ -53,7 +55,47 @@ public class ReservaService {
     
     public ReservaResponseDTO crearReserva(ReservaRequestDTO dto) {
     	
-    	AulaFeignDTO aula = aulaClienteService.obtenerAulaSegura(dto.getIdAula());
+    	
+    	//limite de fechas
+    	LocalDate hoy = LocalDate.now();
+        if (dto.getFechaReserva().isBefore(hoy)) {
+            throw new RuntimeException("No puedes reservar en fechas pasadas.");
+        }
+        if (dto.getFechaReserva().isAfter(hoy.plusMonths(1))) {
+            throw new RuntimeException("No puedes reservar con más de 1 mes de anticipación.");
+        }
+    	
+        
+    	//solo 3 reservas por dia
+        long misReservasHoy = repoReserva.countByIdUsuarioAndFechaReservaAndIdEstadoReservaIn(
+                dto.getIdUsuario(), 
+                dto.getFechaReserva(), 
+                List.of(ESTADO_PENDIENTE, ESTADO_APROBADA)
+        );
+    	
+        if (misReservasHoy >= 3) {
+            throw new RuntimeException("Has alcanzado el límite máximo de 3 reservas para este día.");
+        }
+    	
+        
+        //filtrar si hay clases
+    	DisponibilidadResponseDTO disponibilidad = aulaClienteService.verificarDisponibilidadSegura(
+                dto.getIdAula(), 
+                dto.getIdHorario(), 
+                dto.getFechaReserva().toString()
+        );
+    	
+    	if (!disponibilidad.isDisponible()) {
+            if ("ERROR_CONEXION".equals(disponibilidad.getMensaje())) {
+                throw new RuntimeException("No se puede verificar la disponibilidad del salón en este momento. Intente más tarde.");
+            }
+            throw new RuntimeException("Reserva denegada: El salón tiene una clase oficial programada en este horario.");
+        }
+    	
+    	
+    	//filtrar si el aula existe
+    	AulaFeignDTO aula = aulaClienteService.obtenerAulaSegura(dto.getIdAula()); 
+    	
     	
         if (aula == null || aula.getIdAula() == null) {
         	throw new RuntimeException("El servicio de laboratorios no está disponible o el laboratorio no existe. Intente más tarde.");
@@ -77,7 +119,7 @@ public class ReservaService {
             }
         }
         
-        
+        //aca ya se guarda la reserva
         Reserva reserva = new Reserva();
         reserva.setFechaReserva(dto.getFechaReserva());
         reserva.setFechaSolicitud(LocalDateTime.now());
