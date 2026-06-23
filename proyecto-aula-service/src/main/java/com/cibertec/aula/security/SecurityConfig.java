@@ -20,11 +20,9 @@ public class SecurityConfig {
 
 		http.csrf(csrf -> csrf.disable())
 		.authorizeHttpRequests(auth -> auth
-				//.requestMatchers("/api/aulas/disponibilidad").permitAll()
-				//.anyRequest().authenticated()
-				.anyRequest().permitAll()
-			);
-			//.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+				.anyRequest().authenticated()
+			)
+			.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}
 

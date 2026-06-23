@@ -1,4 +1,4 @@
-package com.cibertec.aula.security;
+package com.cibertec.service.security;
 
 import java.nio.charset.StandardCharsets;
 
